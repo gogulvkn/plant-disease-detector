@@ -12,6 +12,10 @@ pinned: false
 
 # Verdant: Plant Disease Detector
 
+[Live demo](https://huggingface.co/spaces/gogulvkn/plant-disease-detector)
+
+![Demo](docs/demo.png)
+
 Upload a leaf photo and a YOLO11s model draws bounding boxes around diseased regions.
 Trained on the [Plant Disease Detection Bounding Box Dataset](https://www.kaggle.com/datasets/mahin661/plant-disease-detection-bounding-box-dataset).
 
