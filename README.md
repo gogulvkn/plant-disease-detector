@@ -1,4 +1,5 @@
 ---
+license: agpl-3.0
 title: Verdant Plant Disease Detector
 emoji: 🌿
 colorFrom: green
@@ -6,6 +7,7 @@ colorTo: yellow
 sdk: docker
 app_port: 7860
 pinned: false
+
 ---
 
 # Verdant: Plant Disease Detector
