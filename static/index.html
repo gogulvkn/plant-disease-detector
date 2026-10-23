@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verdant — Plant Disease Detector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#07140e; --moss:#0f2a1d; --leaf:#2fbf71; --gold:#e6c27a; --ivory:#f3efe3; --rust:#d1623a;
+  --line:rgba(230,194,122,.28); --muted:rgba(243,239,227,.62);
+}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{
+  font-family:Manrope,system-ui,sans-serif;color:var(--ivory);line-height:1.6;
+  background:
+    radial-gradient(900px 500px at 85% -10%,rgba(47,191,113,.22),transparent 60%),
+    radial-gradient(700px 500px at -10% 40%,rgba(230,194,122,.12),transparent 60%),
+    var(--night);
+  padding:clamp(20px,4vw,56px);
+}
+.wrap{max-width:1120px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:clamp(28px,6vw,64px)}
+.brand{font-family:"Cormorant Garamond",serif;font-size:1.6rem;font-weight:700;letter-spacing:.02em;color:var(--gold)}
+header p{color:var(--muted);font-size:.9rem}
+h1{
+  font-family:"Cormorant Garamond",serif;font-weight:500;line-height:.98;
+  font-size:clamp(2.8rem,8vw,6.2rem);max-width:12ch;
+  background:linear-gradient(100deg,var(--ivory) 30%,var(--gold) 75%,var(--ivory));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:sheen 1.8s ease-out both;
+}
+@keyframes sheen{from{opacity:0;letter-spacing:.06em}to{opacity:1;letter-spacing:0}}
+.lede{margin:22px 0 clamp(28px,5vw,52px);max-width:52ch;color:var(--muted);font-size:1.05rem}
+.stage{display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:start}
+@media(max-width:860px){.stage{grid-template-columns:1fr}}
+.frame{
+  position:relative;border:1px solid var(--line);border-radius:22px;padding:14px;
+  background:linear-gradient(160deg,rgba(15,42,29,.9),rgba(7,20,14,.9));
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.8),inset 0 0 0 6px rgba(7,20,14,.9),inset 0 0 0 7px var(--line);
+}
+.drop{
+  display:grid;place-items:center;text-align:center;min-height:380px;border-radius:12px;cursor:pointer;
+  border:1.5px dashed var(--line);padding:24px;transition:border-color .2s,background .2s;
+}
+.drop:hover,.drop.over{border-color:var(--leaf);background:rgba(47,191,113,.06)}
+.drop:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.drop svg{width:64px;height:64px;stroke:var(--gold);fill:none;stroke-width:1.2;margin-bottom:14px}
+.drop strong{font-family:"Cormorant Garamond",serif;font-size:1.7rem;font-weight:500;display:block}
+.drop span{color:var(--muted);font-size:.9rem}
+canvas{display:none;width:100%;height:auto;border-radius:12px}
+.scan{position:absolute;left:14px;right:14px;top:14px;height:2px;background:linear-gradient(90deg,transparent,var(--leaf),transparent);box-shadow:0 0 22px 4px var(--leaf);opacity:0;pointer-events:none}
+.busy .scan{opacity:1;animation:scan 1.4s ease-in-out infinite alternate}
+@keyframes scan{to{transform:translateY(calc(var(--h,380px) - 4px))}}
+.panel{display:flex;flex-direction:column;gap:22px}
+.card{border:1px solid var(--line);border-radius:18px;padding:20px;background:rgba(15,42,29,.55);backdrop-filter:blur(6px)}
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
+input[type=text]{
+  width:100%;background:rgba(7,20,14,.8);border:1px solid var(--line);border-radius:10px;
+  color:var(--ivory);padding:10px 12px;font:inherit;font-size:.9rem;
+}
+input[type=range]{width:100%;accent-color:var(--leaf)}
+.row{display:flex;justify-content:space-between;align-items:center}
+.row output{color:var(--gold);font-weight:700}
+.field+.field{margin-top:16px}
+button.go{
+  width:100%;border:0;border-radius:999px;padding:15px 22px;font:inherit;font-weight:700;font-size:1rem;cursor:pointer;
+  color:var(--night);background:linear-gradient(110deg,#b98f3f,var(--gold) 45%,#f6dfa6 60%,var(--gold));
+  background-size:200% 100%;transition:background-position .5s,transform .15s,opacity .2s;
+}
+button.go:hover:not(:disabled){background-position:100% 0}
+button.go:active:not(:disabled){transform:scale(.98)}
+button.go:disabled{opacity:.4;cursor:not-allowed}
+.results h2{font-family:"Cormorant Garamond",serif;font-weight:500;font-size:1.5rem;margin-bottom:10px}
+.hit{display:grid;grid-template-columns:12px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.dot{width:12px;height:12px;border-radius:50%}
+.hit b{font-weight:500}
+.bar{grid-column:2/4;height:4px;border-radius:4px;background:rgba(243,239,227,.1);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px}
+.msg{color:var(--muted);font-size:.92rem}
+.msg.err{color:#ffb59c}
+.msg.ok{color:var(--leaf)}
+.swap{margin-top:12px;background:none;border:0;color:var(--gold);font:inherit;font-size:.88rem;cursor:pointer;text-decoration:underline;text-underline-offset:4px;display:none}
+footer{margin-top:56px;color:var(--muted);font-size:.8rem}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Verdant</div>
+    <p>YOLO11 leaf diagnostics</p>
+  </header>
+
+  <h1>Read the leaf before the field does.</h1>
+  <p class="lede">Upload a photo of a diseased leaf. The model draws a box around each lesion and names the disease it sees.</p>
+
+  <main class="stage">
+    <div class="frame" id="frame">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose a leaf photo">
+        <div>
+          <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M52 10C28 10 12 24 12 42c0 4 1 8 3 12 2-14 12-24 26-30-10 8-17 18-19 31 3 1 6 1 9 1 17 0 29-14 21-46z"/></svg>
+          <strong>Drop a leaf photo here</strong>
+          <span>or click to browse. JPG or PNG.</span>
+        </div>
+      </div>
+      <canvas id="cv"></canvas>
+      <div class="scan"></div>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+
+    <aside class="panel">
+      <div class="card">
+        <div class="field">
+          <label for="api">Detection endpoint</label>
+          <input type="text" id="api" value="/detect" spellcheck="false">
+        </div>
+        <div class="field">
+          <div class="row"><label for="conf" style="margin:0">Minimum confidence</label><output id="confOut">25%</output></div>
+          <input type="range" id="conf" min="5" max="95" value="25">
+        </div>
+      </div>
+      <button class="go" id="go" disabled>Detect disease</button>
+      <div class="card results" id="results">
+        <h2>Findings</h2>
+        <p class="msg" id="status">Add a photo to begin.</p>
+        <div id="list"></div>
+        <button class="swap" id="swap">Choose another photo</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer>Detections are a screening aid. Confirm with an agronomist before treating a crop.</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const drop=$('drop'), file=$('file'), cv=$('cv'), ctx=cv.getContext('2d'), go=$('go');
+const palette=['#2fbf71','#e6c27a','#d1623a','#6ab7ff','#c58bff','#ff8fb1','#8fe3d2','#f0a53a'];
+const colors={}; let img=null, blob=null;
+if (location.protocol==='file:') $('api').value='http://127.0.0.1:8000/detect';
+
+$('conf').oninput = e => $('confOut').textContent = e.target.value + '%';
+drop.onclick = () => file.click();
+drop.onkeydown = e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); file.click(); } };
+$('swap').onclick = () => file.click();
+['dragenter','dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => load(e.dataTransfer.files[0]));
+file.onchange = () => load(file.files[0]);
+
+function load(f){
+  if(!f || !f.type.startsWith('image/')) return;
+  blob = f; img = new Image();
+  img.onload = () => {
+    cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+    ctx.drawImage(img,0,0);
+    drop.style.display='none'; cv.style.display='block';
+    $('frame').style.setProperty('--h', cv.getBoundingClientRect().height + 'px');
+    go.disabled=false; $('swap').style.display='inline';
+    $('list').innerHTML=''; setStatus('Photo ready. Press Detect disease.');
+  };
+  img.src = URL.createObjectURL(f);
+}
+
+function setStatus(t,cls=''){ const s=$('status'); s.textContent=t; s.className='msg '+cls; }
+function colorFor(c){ return colors[c] ||= palette[Object.keys(colors).length % palette.length]; }
+const pretty = s => s.replace(/_+/g,' ').replace(/\s+/g,' ').trim();
+
+go.onclick = async () => {
+  if(!blob) return;
+  go.disabled=true; $('frame').classList.add('busy'); setStatus('Scanning the leaf…');
+  try{
+    const fd=new FormData(); fd.append('file', blob);
+    const url = $('api').value.trim() + (($('api').value.includes('?')?'&':'?') + 'conf=' + ($('conf').value/100));
+    const res = await fetch(url,{method:'POST',body:fd});
+    if(!res.ok) throw new Error('Server returned ' + res.status);
+    draw(await res.json());
+  }catch(e){
+    setStatus('Could not reach the model. Check that the server is running, the endpoint is correct, and CORS is enabled. (' + e.message + ')','err');
+  }finally{
+    go.disabled=false; $('frame').classList.remove('busy');
+  }
+};
+
+function draw(dets){
+  ctx.drawImage(img,0,0);
+  const lw=Math.max(3,Math.round(cv.width/220)), fs=Math.max(14,Math.round(cv.width/34));
+  ctx.lineWidth=lw; ctx.font=`700 ${fs}px Manrope, sans-serif`; ctx.textBaseline='top';
+  dets.forEach(d=>{
+    const [x1,y1,x2,y2]=d.box, col=colorFor(d['class']);
+    ctx.strokeStyle=col; ctx.strokeRect(x1,y1,x2-x1,y2-y1);
+    const t=`${pretty(d['class'])} ${Math.round(d.conf*100)}%`, w=ctx.measureText(t).width+14, h=fs+10;
+    const ty = y1-h < 0 ? y1 : y1-h;
+    ctx.fillStyle=col; ctx.fillRect(x1-lw/2,ty,w,h);
+    ctx.fillStyle='#07140e'; ctx.fillText(t,x1+5,ty+5);
+  });
+  const list=$('list'); list.innerHTML='';
+  if(!dets.length){ setStatus('No disease found at this confidence. Try lowering the slider.'); return; }
+  setStatus(dets.length + (dets.length===1?' finding':' findings') + ', strongest first.','ok');
+  dets.sort((a,b)=>b.conf-a.conf).forEach(d=>{
+    const col=colorFor(d['class']), p=Math.round(d.conf*100), el=document.createElement('div');
+    el.className='hit';
+    el.innerHTML=`<span class="dot" style="background:${col}"></span><b>${pretty(d['class'])}</b><span>${p}%</span><div class="bar"><i style="width:${p}%;background:${col}"></i></div>`;
+    list.appendChild(el);
+  });
+}
+</script>
+</body>
+</html>
